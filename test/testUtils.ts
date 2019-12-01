@@ -90,16 +90,6 @@ export function assertEqualLines(expectedLines: string[]) {
   assert.strictEqual(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
 }
 
-/**
- * Assert that the first two arguments are equal, and fail a test otherwise.
- *
- * The only difference between this and assert.strictEqual is that here we
- * check to ensure the types of the variables are correct.
- */
-export function assertEqual<T>(one: T, two: T, message: string = ''): void {
-  assert.strictEqual(one, two, message);
-}
-
 export function assertStatusBarEqual(
   expectedText: string,
   message: string = 'Status bar text does not match'
