@@ -89,11 +89,11 @@ export class BaseOperator extends BaseAction {
   /**
    * Run this operator on a range, returning the new location of the cursor.
    */
-  run(vimState: VimState, start: Position, stop: Position): Promise<VimState> {
+  public run(vimState: VimState, start: Position, stop: Position): Promise<VimState> {
     throw new Error('You need to override this!');
   }
 
-  runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
+  public runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return this.run(
       vimState,
@@ -780,6 +780,43 @@ export class CommentOperator extends BaseOperator {
     await vimState.setCurrentMode(Mode.Normal);
 
     return vimState;
+  }
+}
+
+@RegisterAction
+export class ROT13Operator extends BaseOperator {
+  public keys = ['g', '?'];
+  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    const original = TextEditor.getText(new vscode.Range(start, end));
+    vimState.recordedState.transformations.push({
+      type: 'replaceText',
+      text: original.split('').map(ROT13Operator.rot13).join(''),
+      start,
+      end,
+    });
+
+    return vimState;
+  }
+
+  /**
+   * https://en.wikipedia.org/wiki/ROT13
+   */
+  private static rot13(char: string) {
+    const charCode = char.charCodeAt(0);
+
+    if (char >= "a" && char <= "z") {
+      const a = "a".charCodeAt(0);
+      return String.fromCharCode(26 - (charCode - a));
+    }
+
+    if (char >= "A" && char <= "Z") {
+      const A = "A".charCodeAt(0);
+      return String.fromCharCode(26 - (charCode - A));
+    }
+
+    return char;
   }
 }
 
